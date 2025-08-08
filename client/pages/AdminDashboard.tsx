@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DatabaseSetupGuide from "@/components/DatabaseSetupGuide";
 import {
   Table,
   TableBody,
@@ -93,6 +94,7 @@ export default function AdminDashboard() {
   );
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showDatabaseGuide, setShowDatabaseGuide] = useState(false);
 
   // Redirect if not logged in
   if (!isLoggedIn) {
@@ -122,42 +124,80 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       // Get total users
-      const { count: usersCount } = await supabase
+      const { count: usersCount, error: usersError } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true });
 
       // Get total invitations
-      const { count: invitationsCount } = await supabase
-        .from("invitations")
-        .select("*", { count: "exact", head: true });
+      const { count: invitationsCount, error: invitationsError } =
+        await supabase
+          .from("invitations")
+          .select("*", { count: "exact", head: true });
 
       // Get total subscriptions
-      const { count: subscriptionsCount } = await supabase
-        .from("user_subscriptions")
-        .select("*", { count: "exact", head: true });
+      const { count: subscriptionsCount, error: subscriptionsError } =
+        await supabase
+          .from("user_subscriptions")
+          .select("*", { count: "exact", head: true });
 
       // Get pending purchase requests
-      const { count: pendingCount } = await supabase
+      const { count: pendingCount, error: pendingError } = await supabase
         .from("purchase_requests")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending");
 
       // Get active subscriptions
-      const { count: activeCount } = await supabase
+      const { count: activeCount, error: activeError } = await supabase
         .from("user_subscriptions")
         .select("*", { count: "exact", head: true })
         .eq("status", "active");
 
-      setStats({
-        totalUsers: usersCount || 0,
-        totalInvitations: invitationsCount || 0,
-        totalSubscriptions: subscriptionsCount || 0,
-        pendingRequests: pendingCount || 0,
-        activeSubscriptions: activeCount || 0,
-        monthlyRevenue: 0, // Calculate from subscriptions if needed
-      });
+      // Check if any major errors indicate missing tables
+      const hasTableErrors = [
+        usersError,
+        invitationsError,
+        subscriptionsError,
+        pendingError,
+        activeError,
+      ].some((error) => error && error.message.includes("does not exist"));
+
+      if (hasTableErrors) {
+        console.log("Database tables not found, using demo data");
+        setShowDatabaseGuide(true);
+        // Set demo/default stats
+        setStats({
+          totalUsers: 0,
+          totalInvitations: parseInt(
+            localStorage.getItem("demo_invitation_count") || "0",
+          ),
+          totalSubscriptions: 0,
+          pendingRequests: 0,
+          activeSubscriptions: 0,
+          monthlyRevenue: 0,
+        });
+      } else {
+        setStats({
+          totalUsers: usersCount || 0,
+          totalInvitations: invitationsCount || 0,
+          totalSubscriptions: subscriptionsCount || 0,
+          pendingRequests: pendingCount || 0,
+          activeSubscriptions: activeCount || 0,
+          monthlyRevenue: 0, // Calculate from subscriptions if needed
+        });
+      }
     } catch (error) {
       console.error("Error loading stats:", error);
+      // Set demo/fallback stats on error
+      setStats({
+        totalUsers: 0,
+        totalInvitations: parseInt(
+          localStorage.getItem("demo_invitation_count") || "0",
+        ),
+        totalSubscriptions: 0,
+        pendingRequests: 0,
+        activeSubscriptions: 0,
+        monthlyRevenue: 0,
+      });
     }
   };
 
@@ -169,10 +209,18 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("does not exist")) {
+          console.log("Purchase requests table not found, using empty data");
+          setPurchaseRequests([]);
+          return;
+        }
+        throw error;
+      }
       setPurchaseRequests(data || []);
     } catch (error) {
       console.error("Error loading purchase requests:", error);
+      setPurchaseRequests([]);
     }
   };
 
@@ -193,10 +241,18 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("does not exist")) {
+          console.log("Subscriptions table not found, using empty data");
+          setSubscriptions([]);
+          return;
+        }
+        throw error;
+      }
       setSubscriptions(data || []);
     } catch (error) {
       console.error("Error loading subscriptions:", error);
+      setSubscriptions([]);
     }
   };
 
@@ -625,6 +681,12 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Database Setup Guide */}
+      <DatabaseSetupGuide
+        isVisible={showDatabaseGuide}
+        onDismiss={() => setShowDatabaseGuide(false)}
+      />
     </div>
   );
 }
