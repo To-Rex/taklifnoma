@@ -211,7 +211,8 @@
 }
 
 @keyframes real-time-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -228,7 +229,9 @@
   }
   100% {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -290,7 +293,11 @@
 
 /* Grid Pattern Background */
 .bg-grid-pattern {
-  background-image: radial-gradient(circle, rgba(59, 130, 246, 0.15) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.15) 1px,
+    transparent 1px
+  );
   background-size: 20px 20px;
   animation: grid-pattern 20s linear infinite;
 }
@@ -302,7 +309,9 @@
 
 .hover-lift-strong:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.1);
 }
 
 .hover-border-glow {
@@ -334,9 +343,11 @@
 
 /* Enhanced Card Styles */
 .template-card {
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     hsl(var(--card)) 0%,
-    hsl(var(--card) / 0.95) 100%);
+    hsl(var(--card) / 0.95) 100%
+  );
   backdrop-filter: blur(12px);
   border: 1px solid hsl(var(--border) / 0.8);
   transition: all 0.3s ease;
@@ -345,16 +356,19 @@
 .template-card:hover {
   border-color: hsl(var(--primary) / 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04),
-              0 0 0 1px hsl(var(--primary) / 0.1);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px hsl(var(--primary) / 0.1);
 }
 
 /* Premium Gradient Buttons */
 .btn-premium {
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     hsl(var(--primary)) 0%,
-    hsl(var(--primary-dark)) 100%);
+    hsl(var(--primary-dark)) 100%
+  );
   border: none;
   color: white;
   transition: all 0.3s ease;
@@ -363,16 +377,18 @@
 }
 
 .btn-premium::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent,
     rgba(255, 255, 255, 0.2),
-    transparent);
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -394,7 +410,7 @@
 }
 
 .status-indicator::before {
-  content: '';
+  content: "";
   width: 8px;
   height: 8px;
   background: #10b981;

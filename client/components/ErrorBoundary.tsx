@@ -45,7 +45,9 @@ class ErrorBoundary extends React.Component<
                   Xatolik tafsilotlari (development)
                 </summary>
                 <pre className="mt-2 text-xs text-red-600 overflow-auto max-h-32">
-                  {this.state.error?.message || this.state.error?.toString() || 'Unknown error'}
+                  {this.state.error?.message ||
+                    this.state.error?.toString() ||
+                    "Unknown error"}
                 </pre>
               </details>
             )}

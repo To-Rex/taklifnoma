@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from "./supabase";
 
 // UUID extension import
 declare global {
@@ -9,13 +9,15 @@ declare global {
 
 // Database jadvallarini avtomatik yaratish va sozlash
 export async function setupDatabase() {
-  console.log('🚀 Database setup boshlandi...');
+  console.log("🚀 Database setup boshlandi...");
 
   try {
     // 1. Profiles jadvali tekshirish va yaratish
-    const { error: profilesError } = await supabase.rpc('create_profiles_table');
-    if (profilesError && !profilesError.message.includes('already exists')) {
-      console.log('📋 Profiles jadvali yaratilmoqda...');
+    const { error: profilesError } = await supabase.rpc(
+      "create_profiles_table",
+    );
+    if (profilesError && !profilesError.message.includes("already exists")) {
+      console.log("📋 Profiles jadvali yaratilmoqda...");
       await executeSQL(`
         -- Profiles jadvali
         CREATE TABLE IF NOT EXISTS public.profiles (
@@ -52,7 +54,7 @@ export async function setupDatabase() {
     }
 
     // 2. Custom Templates jadvali
-    console.log('📋 Custom Templates jadvali yaratilmoqda...');
+    console.log("📋 Custom Templates jadvali yaratilmoqda...");
     await executeSQL(`
       -- Custom Templates jadvali
       CREATE TABLE IF NOT EXISTS public.custom_templates (
@@ -99,7 +101,7 @@ export async function setupDatabase() {
     `);
 
     // 3. Invitations jadvali
-    console.log('📋 Invitations jadvali yaratilmoqda...');
+    console.log("📋 Invitations jadvali yaratilmoqda...");
     await executeSQL(`
       -- Invitations jadvali
       CREATE TABLE IF NOT EXISTS public.invitations (
@@ -150,7 +152,7 @@ export async function setupDatabase() {
     `);
 
     // 4. Guests jadvali
-    console.log('📋 Guests jadvali yaratilmoqda...');
+    console.log("📋 Guests jadvali yaratilmoqda...");
     await executeSQL(`
       -- Guests jadvali
       CREATE TABLE IF NOT EXISTS public.guests (
@@ -184,7 +186,7 @@ export async function setupDatabase() {
     `);
 
     // 5. RSVPs jadvali
-    console.log('📋 RSVPs jadvali yaratilmoqda...');
+    console.log("📋 RSVPs jadvali yaratilmoqda...");
     await executeSQL(`
       -- RSVPs jadvali
       CREATE TABLE IF NOT EXISTS public.rsvps (
@@ -229,7 +231,7 @@ export async function setupDatabase() {
     `);
 
     // 6. Indekslar yaratish
-    console.log('📊 Indekslar yaratilmoqda...');
+    console.log("📊 Indekslar yaratilmoqda...");
     await executeSQL(`
       -- Indekslar yaratish
       CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
@@ -243,7 +245,7 @@ export async function setupDatabase() {
     `);
 
     // 7. Triggerlar yaratish
-    console.log('⚡ Triggerlar yaratilmoqda...');
+    console.log("⚡ Triggerlar yaratilmoqda...");
     await executeSQL(`
       -- Updated_at trigger funksiyasi
       CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -282,7 +284,7 @@ export async function setupDatabase() {
     `);
 
     // 8. Profil yaratish trigger funksiyasi
-    console.log('👤 Profil yaratish triggerini sozlash...');
+    console.log("👤 Profil yaratish triggerini sozlash...");
     await executeSQL(`
       -- Handle new user function
       CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -306,35 +308,34 @@ export async function setupDatabase() {
         FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
     `);
 
-    console.log('✅ Database muvaffaqiyatli sozlandi!');
-    return { success: true, message: 'Database muvaffaqiyatli sozlandi!' };
-
+    console.log("✅ Database muvaffaqiyatli sozlandi!");
+    return { success: true, message: "Database muvaffaqiyatli sozlandi!" };
   } catch (error: any) {
-    console.error('❌ Database setup xatoligi:', error);
+    console.error("❌ Database setup xatoligi:", error);
     return { success: false, message: error.message };
   }
 }
 
 // SQL buyruqlarini bajarish uchun helper funksiya
 async function executeSQL(sql: string) {
-  const { error } = await supabase.rpc('exec_sql', { sql_query: sql });
+  const { error } = await supabase.rpc("exec_sql", { sql_query: sql });
   if (error) {
     // Agar RPC funksiyasi mavjud bo'lmasa, to'g'ridan-to'g'ri database'ga so'rov yuboramiz
-    console.log('RPC mavjud emas, to\'g\'ridan-to\'g\'ri so\'rov yuborish...');
-    
+    console.log("RPC mavjud emas, to'g'ridan-to'g'ri so'rov yuborish...");
+
     // SQL ni qatorlarga bo'lib, har birini alohida bajaramiz
     const statements = sql
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-    
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
     for (const statement of statements) {
       try {
         const { error: directError } = await supabase
-          .from('_direct_sql')
-          .select('*')
-          .eq('query', statement);
-        
+          .from("_direct_sql")
+          .select("*")
+          .eq("query", statement);
+
         if (directError) {
           console.log(`SQL bajarildi: ${statement.substring(0, 50)}...`);
         }
@@ -347,25 +348,25 @@ async function executeSQL(sql: string) {
 
 // Database holatini tekshirish
 export async function checkDatabaseStatus() {
-  console.log('🔍 Database holatini tekshirish...');
-  
+  console.log("🔍 Database holatini tekshirish...");
+
   const tables = [
-    'profiles',
-    'custom_templates', 
-    'invitations',
-    'guests',
-    'rsvps'
+    "profiles",
+    "custom_templates",
+    "invitations",
+    "guests",
+    "rsvps",
   ];
-  
+
   const status: Record<string, boolean> = {};
-  
+
   for (const table of tables) {
     try {
       const { error } = await supabase
         .from(table as any)
-        .select('id')
+        .select("id")
         .limit(1);
-        
+
       status[table] = !error;
       if (error) {
         console.log(`❌ ${table} jadvali mavjud emas:`, error.message);
@@ -377,27 +378,27 @@ export async function checkDatabaseStatus() {
       console.log(`❌ ${table} jadvali tekshirishda xatolik:`, err);
     }
   }
-  
+
   const allTablesExist = Object.values(status).every(Boolean);
-  
+
   return {
     status,
     allTablesExist,
-    message: allTablesExist 
-      ? 'Barcha jadvallar mavjud' 
-      : 'Ba\'zi jadvallar mavjud emas'
+    message: allTablesExist
+      ? "Barcha jadvallar mavjud"
+      : "Ba'zi jadvallar mavjud emas",
   };
 }
 
 // Ma'lumotlar bazasini to'liq tiklash
 export async function resetDatabase() {
-  console.log('🔄 Database qayta tiklanmoqda...');
-  
+  console.log("🔄 Database qayta tiklanmoqda...");
+
   try {
     await setupDatabase();
-    return { success: true, message: 'Database qayta tiklandi!' };
+    return { success: true, message: "Database qayta tiklandi!" };
   } catch (error: any) {
-    console.error('❌ Database qayta tiklash xatoligi:', error);
+    console.error("❌ Database qayta tiklash xatoligi:", error);
     return { success: false, message: error.message };
   }
 }

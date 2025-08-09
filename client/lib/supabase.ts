@@ -273,17 +273,20 @@ import { templateManager, defaultWeddingTemplates } from "./defaultTemplates";
 export const templateOperations = {
   // Create template with enhanced error handling
   create: async (templateData: any) => {
-    console.log('🚀 Template yaratish boshlandi:', templateData);
+    console.log("🚀 Template yaratish boshlandi:", templateData);
 
     try {
       // Avval database mavjudligini tekshiramiz
       const { error: testError } = await supabase
-        .from('custom_templates')
-        .select('id')
+        .from("custom_templates")
+        .select("id")
         .limit(1);
 
       if (testError) {
-        console.log('❌ custom_templates jadvali mavjud emas:', testError.message);
+        console.log(
+          "❌ custom_templates jadvali mavjud emas:",
+          testError.message,
+        );
 
         // Jadval mavjud bo'lmasa, fallback
         const localTemplate = {
@@ -301,7 +304,8 @@ export const templateOperations = {
         return {
           data: localTemplate,
           error: null,
-          message: 'Template vaqtincha mahalliy xotiraga saqlandi. Database ulanishini tekshiring.'
+          message:
+            "Template vaqtincha mahalliy xotiraga saqlandi. Database ulanishini tekshiring.",
         };
       }
 
@@ -313,11 +317,11 @@ export const templateOperations = {
         .single();
 
       if (error) {
-        console.error('❌ Supabase template saqlash xatoligi:', error);
+        console.error("❌ Supabase template saqlash xatoligi:", error);
         throw error;
       }
 
-      console.log('✅ Template muvaffaqiyatli saqlandi:', data);
+      console.log("✅ Template muvaffaqiyatli saqlandi:", data);
 
       // Invalidate user templates cache
       if (templateData.user_id) {
@@ -329,8 +333,11 @@ export const templateOperations = {
         cacheUtils.setTemplate(data.id, data);
       }
 
-      return { data, error: null, message: 'Template muvaffaqiyatli Supabase\'ga saqlandi!' };
-
+      return {
+        data,
+        error: null,
+        message: "Template muvaffaqiyatli Supabase'ga saqlandi!",
+      };
     } catch (error: any) {
       console.error("❌ Template yaratishda xatolik:", error);
 
@@ -351,7 +358,8 @@ export const templateOperations = {
       return {
         data: localTemplate,
         error: null,
-        message: 'Template vaqtincha mahalliy xotiraga saqlandi. Database bilan bog\'lanishda muammo.'
+        message:
+          "Template vaqtincha mahalliy xotiraga saqlandi. Database bilan bog'lanishda muammo.",
       };
     }
   },

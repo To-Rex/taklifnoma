@@ -96,7 +96,9 @@ export default function TemplateBuilder() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("info");
-  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [previewDevice, setPreviewDevice] = useState<
+    "desktop" | "tablet" | "mobile"
+  >("desktop");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showDatabaseSetup, setShowDatabaseSetup] = useState(false);
@@ -143,147 +145,159 @@ export default function TemplateBuilder() {
   });
 
   // Memoized color presets
-  const colorPresets = useMemo(() => [
-    {
-      name: "TaklifNoma Asosiy",
-      emoji: "💎",
-      description: "Professional va zamonaviy",
-      colors: {
-        primary: "hsl(220, 91%, 56%)",
-        secondary: "hsl(220, 14%, 96%)",
-        accent: "hsl(220, 91%, 66%)",
-        background: "hsl(0, 0%, 100%)",
-        text: "hsl(224, 71%, 4%)",
+  const colorPresets = useMemo(
+    () => [
+      {
+        name: "TaklifNoma Asosiy",
+        emoji: "💎",
+        description: "Professional va zamonaviy",
+        colors: {
+          primary: "hsl(220, 91%, 56%)",
+          secondary: "hsl(220, 14%, 96%)",
+          accent: "hsl(220, 91%, 66%)",
+          background: "hsl(0, 0%, 100%)",
+          text: "hsl(224, 71%, 4%)",
+        },
       },
-    },
-    {
-      name: "Romantik Pushti",
-      emoji: "🌸",
-      description: "Nozik va romantik",
-      colors: {
-        primary: "#be185d",
-        secondary: "#fda4af",
-        accent: "#fb7185",
-        background: "#fdf2f8",
-        text: "#881337",
+      {
+        name: "Romantik Pushti",
+        emoji: "🌸",
+        description: "Nozik va romantik",
+        colors: {
+          primary: "#be185d",
+          secondary: "#fda4af",
+          accent: "#fb7185",
+          background: "#fdf2f8",
+          text: "#881337",
+        },
       },
-    },
-    {
-      name: "Zamonaviy Ko'k",
-      emoji: "💙",
-      description: "Tinch va ishonchli",
-      colors: {
-        primary: "#2563eb",
-        secondary: "#60a5fa",
-        accent: "#3b82f6",
-        background: "#eff6ff",
-        text: "#1e3a8a",
+      {
+        name: "Zamonaviy Ko'k",
+        emoji: "💙",
+        description: "Tinch va ishonchli",
+        colors: {
+          primary: "#2563eb",
+          secondary: "#60a5fa",
+          accent: "#3b82f6",
+          background: "#eff6ff",
+          text: "#1e3a8a",
+        },
       },
-    },
-    {
-      name: "Zarhal Oltin",
-      emoji: "✨",
-      description: "Hashamatli va dabdabali",
-      colors: {
-        primary: "#d97706",
-        secondary: "#fbbf24",
-        accent: "#f59e0b",
-        background: "#fffbeb",
-        text: "#92400e",
+      {
+        name: "Zarhal Oltin",
+        emoji: "✨",
+        description: "Hashamatli va dabdabali",
+        colors: {
+          primary: "#d97706",
+          secondary: "#fbbf24",
+          accent: "#f59e0b",
+          background: "#fffbeb",
+          text: "#92400e",
+        },
       },
-    },
-    {
-      name: "Tabiat Yashil",
-      emoji: "🌿",
-      description: "Tabiiy va toza",
-      colors: {
-        primary: "#059669",
-        secondary: "#34d399",
-        accent: "#10b981",
-        background: "#ecfdf5",
-        text: "#064e3b",
+      {
+        name: "Tabiat Yashil",
+        emoji: "🌿",
+        description: "Tabiiy va toza",
+        colors: {
+          primary: "#059669",
+          secondary: "#34d399",
+          accent: "#10b981",
+          background: "#ecfdf5",
+          text: "#064e3b",
+        },
       },
-    },
-    {
-      name: "Hashamatli Binafsha",
-      emoji: "💜",
-      description: "Noyob va ajoyib",
-      colors: {
-        primary: "#7c3aed",
-        secondary: "#a78bfa",
-        accent: "#8b5cf6",
-        background: "#f5f3ff",
-        text: "#581c87",
+      {
+        name: "Hashamatli Binafsha",
+        emoji: "💜",
+        description: "Noyob va ajoyib",
+        colors: {
+          primary: "#7c3aed",
+          secondary: "#a78bfa",
+          accent: "#8b5cf6",
+          background: "#f5f3ff",
+          text: "#581c87",
+        },
       },
-    },
-    {
-      name: "Klassik Qora",
-      emoji: "🖤",
-      description: "Rasmiy va elegant",
-      colors: {
-        primary: "#1f2937",
-        secondary: "#6b7280",
-        accent: "#d97706",
-        background: "#ffffff",
-        text: "#111827",
+      {
+        name: "Klassik Qora",
+        emoji: "🖤",
+        description: "Rasmiy va elegant",
+        colors: {
+          primary: "#1f2937",
+          secondary: "#6b7280",
+          accent: "#d97706",
+          background: "#ffffff",
+          text: "#111827",
+        },
       },
-    },
-  ], []);
+    ],
+    [],
+  );
 
-  const fontOptions = useMemo(() => [
-    { value: "Inter", label: "Inter (Zamonaviy)" },
-    { value: "Poppins", label: "Poppins (Yumaloq)" },
-    { value: "Playfair Display", label: "Playfair Display (Klassik)" },
-    { value: "Dancing Script", label: "Dancing Script (Qo'lyozma)" },
-    { value: "Montserrat", label: "Montserrat (Aniq)" },
-    { value: "Lora", label: "Lora (O'qish uchun)" },
-    { value: "Open Sans", label: "Open Sans (Sodda)" },
-    { value: "Roboto", label: "Roboto (Texnologik)" },
-    { value: "Merriweather", label: "Merriweather (Jurnalistik)" },
-    { value: "Crimson Text", label: "Crimson Text (Akademik)" },
-    { value: "Great Vibes", label: "Great Vibes (Nafis)" },
-    { value: "Libre Baskerville", label: "Libre Baskerville (Klassik)" },
-  ], []);
+  const fontOptions = useMemo(
+    () => [
+      { value: "Inter", label: "Inter (Zamonaviy)" },
+      { value: "Poppins", label: "Poppins (Yumaloq)" },
+      { value: "Playfair Display", label: "Playfair Display (Klassik)" },
+      { value: "Dancing Script", label: "Dancing Script (Qo'lyozma)" },
+      { value: "Montserrat", label: "Montserrat (Aniq)" },
+      { value: "Lora", label: "Lora (O'qish uchun)" },
+      { value: "Open Sans", label: "Open Sans (Sodda)" },
+      { value: "Roboto", label: "Roboto (Texnologik)" },
+      { value: "Merriweather", label: "Merriweather (Jurnalistik)" },
+      { value: "Crimson Text", label: "Crimson Text (Akademik)" },
+      { value: "Great Vibes", label: "Great Vibes (Nafis)" },
+      { value: "Libre Baskerville", label: "Libre Baskerville (Klassik)" },
+    ],
+    [],
+  );
 
-  const layoutStyles = useMemo(() => [
-    {
-      value: "classic",
-      label: "Klassik",
-      description: "An'anaviy va rasmiiy dizayn",
-      icon: "📜",
-    },
-    {
-      value: "modern",
-      label: "Zamonaviy",
-      description: "Minimalistik va sodda",
-      icon: "✨",
-    },
-    {
-      value: "elegant",
-      label: "Nafis",
-      description: "Chiroyli va mukammal",
-      icon: "💎",
-    },
-    {
-      value: "rustic",
-      label: "Tabiy",
-      description: "Tabiy va issiq his",
-      icon: "🌿",
-    },
-    {
-      value: "luxury",
-      label: "Hashamatli",
-      description: "Dabdabali va noyob",
-      icon: "👑",
-    },
-  ], []);
+  const layoutStyles = useMemo(
+    () => [
+      {
+        value: "classic",
+        label: "Klassik",
+        description: "An'anaviy va rasmiiy dizayn",
+        icon: "📜",
+      },
+      {
+        value: "modern",
+        label: "Zamonaviy",
+        description: "Minimalistik va sodda",
+        icon: "✨",
+      },
+      {
+        value: "elegant",
+        label: "Nafis",
+        description: "Chiroyli va mukammal",
+        icon: "💎",
+      },
+      {
+        value: "rustic",
+        label: "Tabiy",
+        description: "Tabiy va issiq his",
+        icon: "🌿",
+      },
+      {
+        value: "luxury",
+        label: "Hashamatli",
+        description: "Dabdabali va noyob",
+        icon: "👑",
+      },
+    ],
+    [],
+  );
 
-  const animationTypes = useMemo(() => [
-    { value: "fade", label: "Fade (Paydo bo'lish)" },
-    { value: "slide", label: "Slide (Sirpanish)" },
-    { value: "scale", label: "Scale (Kattayish)" },
-    { value: "bounce", label: "Bounce (Sakrash)" },
-  ], []);
+  const animationTypes = useMemo(
+    () => [
+      { value: "fade", label: "Fade (Paydo bo'lish)" },
+      { value: "slide", label: "Slide (Sirpanish)" },
+      { value: "scale", label: "Scale (Kattayish)" },
+      { value: "bounce", label: "Bounce (Sakrash)" },
+    ],
+    [],
+  );
 
   // Database holatini tekshirish
   useEffect(() => {
@@ -292,7 +306,7 @@ export default function TemplateBuilder() {
       setDatabaseStatus(status);
 
       if (!status.allTablesExist) {
-        console.log('❌ Database to\'liq sozlanmagan:', status);
+        console.log("❌ Database to'liq sozlanmagan:", status);
         setShowDatabaseSetup(true);
       }
     };
@@ -301,69 +315,69 @@ export default function TemplateBuilder() {
   }, []);
 
   // Real-time update handlers with useCallback for performance
-  const handleColorChange = useCallback((
-    colorType: keyof TemplateConfig["colors"],
-    value: string,
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      colors: {
-        ...prev.colors,
-        [colorType]: value,
-      },
-    }));
-  }, []);
+  const handleColorChange = useCallback(
+    (colorType: keyof TemplateConfig["colors"], value: string) => {
+      setConfig((prev) => ({
+        ...prev,
+        colors: {
+          ...prev.colors,
+          [colorType]: value,
+        },
+      }));
+    },
+    [],
+  );
 
-  const handleFontChange = useCallback((
-    fontType: keyof TemplateConfig["fonts"],
-    value: string,
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      fonts: {
-        ...prev.fonts,
-        [fontType]: value,
-      },
-    }));
-  }, []);
+  const handleFontChange = useCallback(
+    (fontType: keyof TemplateConfig["fonts"], value: string) => {
+      setConfig((prev) => ({
+        ...prev,
+        fonts: {
+          ...prev.fonts,
+          [fontType]: value,
+        },
+      }));
+    },
+    [],
+  );
 
-  const handleLayoutChange = useCallback((
-    layoutKey: keyof TemplateConfig["layout"],
-    value: any,
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      layout: {
-        ...prev.layout,
-        [layoutKey]: value,
-      },
-    }));
-  }, []);
+  const handleLayoutChange = useCallback(
+    (layoutKey: keyof TemplateConfig["layout"], value: any) => {
+      setConfig((prev) => ({
+        ...prev,
+        layout: {
+          ...prev.layout,
+          [layoutKey]: value,
+        },
+      }));
+    },
+    [],
+  );
 
-  const handleAnimationChange = useCallback((
-    animKey: keyof TemplateConfig["animations"],
-    value: any,
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      animations: {
-        ...prev.animations,
-        [animKey]: value,
-      },
-    }));
-  }, []);
+  const handleAnimationChange = useCallback(
+    (animKey: keyof TemplateConfig["animations"], value: any) => {
+      setConfig((prev) => ({
+        ...prev,
+        animations: {
+          ...prev.animations,
+          [animKey]: value,
+        },
+      }));
+    },
+    [],
+  );
 
-  const handleTemplateDataChange = useCallback((
-    key: keyof InvitationData,
-    value: string,
-  ) => {
-    setTemplateData((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  }, []);
+  const handleTemplateDataChange = useCallback(
+    (key: keyof InvitationData, value: string) => {
+      setTemplateData((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    [],
+  );
 
-  const applyColorPreset = useCallback((preset: typeof colorPresets[0]) => {
+  const applyColorPreset = useCallback((preset: (typeof colorPresets)[0]) => {
     setConfig((prev) => ({
       ...prev,
       colors: preset.colors,
@@ -388,7 +402,7 @@ export default function TemplateBuilder() {
 
     try {
       console.log("🚀 Shablon saqlanmoqda...");
-      
+
       const templateToSave = {
         user_id: user.id,
         name: templateData.templateName.trim(),
@@ -420,11 +434,16 @@ export default function TemplateBuilder() {
 
       if (saveError) {
         console.error("❌ Supabase saqlash xatoligi:", saveError);
-        
+
         // Agar jadval mavjud bo'lmasa, uni yaratishga harakat qilamiz
-        if (saveError.message?.includes("does not exist") || saveError.code === "PGRST116") {
-          console.log("🔧 custom_templates jadvali topilmadi, localStorage ga saqlash...");
-          
+        if (
+          saveError.message?.includes("does not exist") ||
+          saveError.code === "PGRST116"
+        ) {
+          console.log(
+            "🔧 custom_templates jadvali topilmadi, localStorage ga saqlash...",
+          );
+
           // LocalStorage ga fallback
           const localTemplate = {
             id: `local_${Date.now()}`,
@@ -438,15 +457,17 @@ export default function TemplateBuilder() {
             JSON.stringify(localTemplate),
           );
 
-          setSuccess("✅ Shablon vaqtincha saqlandi (mahalliy xotira). Database ulanishi qayta tiklanganda Supabase'ga yuklanadi.");
+          setSuccess(
+            "✅ Shablon vaqtincha saqlandi (mahalliy xotira). Database ulanishi qayta tiklanganda Supabase'ga yuklanadi.",
+          );
           setLastSaved(new Date());
-          
+
           setTimeout(() => {
             navigate("/templates");
           }, 3000);
           return;
         }
-        
+
         throw saveError;
       }
 
@@ -459,7 +480,7 @@ export default function TemplateBuilder() {
       }, 2000);
     } catch (err: any) {
       console.error("❌ Shablon saqlash xatoligi:", err);
-      
+
       // Fallback: localStorage ga saqlash
       const fallbackTemplate = {
         id: `local_${Date.now()}`,
@@ -616,7 +637,9 @@ export default function TemplateBuilder() {
     const textSizes = getTextSizes();
 
     return (
-      <div className={`w-full ${getDeviceClass()} mx-auto transition-all duration-500`}>
+      <div
+        className={`w-full ${getDeviceClass()} mx-auto transition-all duration-500`}
+      >
         <div
           className="transition-all duration-500 hover:shadow-xl relative overflow-hidden"
           style={containerStyle}
@@ -855,7 +878,9 @@ export default function TemplateBuilder() {
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6">
             {/* Enhanced Left Panel - Controls */}
-            <div className={`${isFullscreen ? 'hidden' : 'xl:col-span-5 2xl:col-span-4'} order-2 xl:order-1`}>
+            <div
+              className={`${isFullscreen ? "hidden" : "xl:col-span-5 2xl:col-span-4"} order-2 xl:order-1`}
+            >
               <Card className="bg-card/95 backdrop-blur-sm border-border shadow-xl">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -911,14 +936,20 @@ export default function TemplateBuilder() {
                     <TabsContent value="info" className="mt-6 space-y-6">
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="templateName" className="text-sm font-medium">
+                          <Label
+                            htmlFor="templateName"
+                            className="text-sm font-medium"
+                          >
                             Shablon Nomi
                           </Label>
                           <Input
                             id="templateName"
                             value={templateData.templateName}
                             onChange={(e) =>
-                              handleTemplateDataChange("templateName", e.target.value)
+                              handleTemplateDataChange(
+                                "templateName",
+                                e.target.value,
+                              )
                             }
                             placeholder="Mening ajoyib shablonim"
                             className="mt-1 border-border focus:border-primary"
@@ -926,27 +957,39 @@ export default function TemplateBuilder() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="groomName" className="text-sm font-medium">
+                            <Label
+                              htmlFor="groomName"
+                              className="text-sm font-medium"
+                            >
                               Kuyov Ismi
                             </Label>
                             <Input
                               id="groomName"
                               value={templateData.groomName}
                               onChange={(e) =>
-                                handleTemplateDataChange("groomName", e.target.value)
+                                handleTemplateDataChange(
+                                  "groomName",
+                                  e.target.value,
+                                )
                               }
                               className="mt-1 border-border focus:border-primary"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="brideName" className="text-sm font-medium">
+                            <Label
+                              htmlFor="brideName"
+                              className="text-sm font-medium"
+                            >
                               Kelin Ismi
                             </Label>
                             <Input
                               id="brideName"
                               value={templateData.brideName}
                               onChange={(e) =>
-                                handleTemplateDataChange("brideName", e.target.value)
+                                handleTemplateDataChange(
+                                  "brideName",
+                                  e.target.value,
+                                )
                               }
                               className="mt-1 border-border focus:border-primary"
                             />
@@ -954,34 +997,49 @@ export default function TemplateBuilder() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="weddingDate" className="text-sm font-medium">
+                            <Label
+                              htmlFor="weddingDate"
+                              className="text-sm font-medium"
+                            >
                               To'y Sanasi
                             </Label>
                             <Input
                               id="weddingDate"
                               value={templateData.weddingDate}
                               onChange={(e) =>
-                                handleTemplateDataChange("weddingDate", e.target.value)
+                                handleTemplateDataChange(
+                                  "weddingDate",
+                                  e.target.value,
+                                )
                               }
                               className="mt-1 border-border focus:border-primary"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="weddingTime" className="text-sm font-medium">
+                            <Label
+                              htmlFor="weddingTime"
+                              className="text-sm font-medium"
+                            >
                               Vaqt
                             </Label>
                             <Input
                               id="weddingTime"
                               value={templateData.weddingTime}
                               onChange={(e) =>
-                                handleTemplateDataChange("weddingTime", e.target.value)
+                                handleTemplateDataChange(
+                                  "weddingTime",
+                                  e.target.value,
+                                )
                               }
                               className="mt-1 border-border focus:border-primary"
                             />
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="venue" className="text-sm font-medium">
+                          <Label
+                            htmlFor="venue"
+                            className="text-sm font-medium"
+                          >
                             Joy
                           </Label>
                           <Input
@@ -994,27 +1052,39 @@ export default function TemplateBuilder() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="address" className="text-sm font-medium">
+                          <Label
+                            htmlFor="address"
+                            className="text-sm font-medium"
+                          >
                             Manzil
                           </Label>
                           <Input
                             id="address"
                             value={templateData.address}
                             onChange={(e) =>
-                              handleTemplateDataChange("address", e.target.value)
+                              handleTemplateDataChange(
+                                "address",
+                                e.target.value,
+                              )
                             }
                             className="mt-1 border-border focus:border-primary"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="customMessage" className="text-sm font-medium">
+                          <Label
+                            htmlFor="customMessage"
+                            className="text-sm font-medium"
+                          >
                             Maxsus Xabar
                           </Label>
                           <Textarea
                             id="customMessage"
                             value={templateData.customMessage}
                             onChange={(e) =>
-                              handleTemplateDataChange("customMessage", e.target.value)
+                              handleTemplateDataChange(
+                                "customMessage",
+                                e.target.value,
+                              )
                             }
                             className="mt-1 border-border focus:border-primary"
                             rows={3}
@@ -1040,13 +1110,15 @@ export default function TemplateBuilder() {
                               <div className="flex items-center gap-3 mb-2">
                                 <span className="text-lg">{preset.emoji}</span>
                                 <div className="flex gap-1">
-                                  {Object.values(preset.colors).slice(0, 3).map((color, i) => (
-                                    <div
-                                      key={i}
-                                      className="w-4 h-4 rounded-full border border-white shadow-sm group-hover:scale-110 transition-transform"
-                                      style={{ backgroundColor: color }}
-                                    />
-                                  ))}
+                                  {Object.values(preset.colors)
+                                    .slice(0, 3)
+                                    .map((color, i) => (
+                                      <div
+                                        key={i}
+                                        className="w-4 h-4 rounded-full border border-white shadow-sm group-hover:scale-110 transition-transform"
+                                        style={{ backgroundColor: color }}
+                                      />
+                                    ))}
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-foreground">
@@ -1060,7 +1132,9 @@ export default function TemplateBuilder() {
                         </div>
 
                         <div className="mt-6 space-y-4">
-                          <h4 className="font-medium text-foreground">Maxsus Ranglar</h4>
+                          <h4 className="font-medium text-foreground">
+                            Maxsus Ranglar
+                          </h4>
                           {Object.entries(config.colors).map(([key, value]) => (
                             <div key={key} className="flex items-center gap-3">
                               <Label className="text-sm font-medium capitalize min-w-[80px]">
@@ -1177,7 +1251,9 @@ export default function TemplateBuilder() {
                                   }
                                 >
                                   <div className="flex items-center gap-3">
-                                    <span className="text-xl">{style.icon}</span>
+                                    <span className="text-xl">
+                                      {style.icon}
+                                    </span>
                                     <div>
                                       <div className="font-medium text-foreground">
                                         {style.label}
@@ -1199,7 +1275,9 @@ export default function TemplateBuilder() {
                             <div>
                               <Label className="text-sm font-medium flex items-center justify-between">
                                 <span>Ichki bo'shliq</span>
-                                <Badge variant="secondary">{config.layout.spacing}px</Badge>
+                                <Badge variant="secondary">
+                                  {config.layout.spacing}px
+                                </Badge>
                               </Label>
                               <Slider
                                 value={[config.layout.spacing]}
@@ -1215,7 +1293,9 @@ export default function TemplateBuilder() {
                             <div>
                               <Label className="text-sm font-medium flex items-center justify-between">
                                 <span>Padding</span>
-                                <Badge variant="secondary">{config.layout.padding}px</Badge>
+                                <Badge variant="secondary">
+                                  {config.layout.padding}px
+                                </Badge>
                               </Label>
                               <Slider
                                 value={[config.layout.padding]}
@@ -1231,7 +1311,9 @@ export default function TemplateBuilder() {
                             <div>
                               <Label className="text-sm font-medium flex items-center justify-between">
                                 <span>Burchak radiusi</span>
-                                <Badge variant="secondary">{config.layout.borderRadius}px</Badge>
+                                <Badge variant="secondary">
+                                  {config.layout.borderRadius}px
+                                </Badge>
                               </Label>
                               <Slider
                                 value={[config.layout.borderRadius]}
@@ -1247,12 +1329,17 @@ export default function TemplateBuilder() {
                             <div>
                               <Label className="text-sm font-medium flex items-center justify-between">
                                 <span>Soya kuchi</span>
-                                <Badge variant="secondary">{config.layout.shadowIntensity}</Badge>
+                                <Badge variant="secondary">
+                                  {config.layout.shadowIntensity}
+                                </Badge>
                               </Label>
                               <Slider
                                 value={[config.layout.shadowIntensity]}
                                 onValueChange={(value) =>
-                                  handleLayoutChange("shadowIntensity", value[0])
+                                  handleLayoutChange(
+                                    "shadowIntensity",
+                                    value[0],
+                                  )
                                 }
                                 max={20}
                                 min={0}
@@ -1317,7 +1404,9 @@ export default function TemplateBuilder() {
                               <div>
                                 <Label className="text-sm font-medium flex items-center justify-between">
                                   <span>Animatsiya davomiyligi</span>
-                                  <Badge variant="secondary">{config.animations.duration}s</Badge>
+                                  <Badge variant="secondary">
+                                    {config.animations.duration}s
+                                  </Badge>
                                 </Label>
                                 <Slider
                                   value={[config.animations.duration]}
@@ -1341,7 +1430,9 @@ export default function TemplateBuilder() {
             </div>
 
             {/* Enhanced Right Panel - Live Preview */}
-            <div className={`${isFullscreen ? 'col-span-full' : 'xl:col-span-7 2xl:col-span-8'} order-1 xl:order-2`}>
+            <div
+              className={`${isFullscreen ? "col-span-full" : "xl:col-span-7 2xl:col-span-8"} order-1 xl:order-2`}
+            >
               <div className="xl:sticky xl:top-24">
                 <Card className="bg-card/95 backdrop-blur-sm border-border shadow-xl">
                   <CardHeader className="pb-4">
@@ -1356,7 +1447,9 @@ export default function TemplateBuilder() {
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         <Button
-                          variant={previewDevice === "desktop" ? "default" : "outline"}
+                          variant={
+                            previewDevice === "desktop" ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setPreviewDevice("desktop")}
                           className="h-9 w-9 p-0"
@@ -1364,7 +1457,9 @@ export default function TemplateBuilder() {
                           <Monitor className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant={previewDevice === "tablet" ? "default" : "outline"}
+                          variant={
+                            previewDevice === "tablet" ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setPreviewDevice("tablet")}
                           className="h-9 w-9 p-0"
@@ -1372,7 +1467,9 @@ export default function TemplateBuilder() {
                           <Tablet className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant={previewDevice === "mobile" ? "default" : "outline"}
+                          variant={
+                            previewDevice === "mobile" ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setPreviewDevice("mobile")}
                           className="h-9 w-9 p-0"
@@ -1400,7 +1497,7 @@ export default function TemplateBuilder() {
                       <div className="absolute inset-0 opacity-5">
                         <div className="absolute inset-0 bg-grid-pattern"></div>
                       </div>
-                      
+
                       <div className="w-full flex items-center justify-center relative z-10">
                         {TemplatePreview}
                       </div>
@@ -1440,8 +1537,12 @@ export default function TemplateBuilder() {
                       </div>
                       •
                       <span className="capitalize">
-                        {previewDevice === "desktop" ? "Kompyuter" : 
-                         previewDevice === "tablet" ? "Planshet" : "Mobil"} ko'rinish
+                        {previewDevice === "desktop"
+                          ? "Kompyuter"
+                          : previewDevice === "tablet"
+                            ? "Planshet"
+                            : "Mobil"}{" "}
+                        ko'rinish
                       </span>
                     </div>
                   </CardContent>

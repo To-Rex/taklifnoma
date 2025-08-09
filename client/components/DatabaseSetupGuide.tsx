@@ -1,4 +1,12 @@
-import { AlertCircle, Database, CheckCircle2, Copy, Eye, Loader2, Zap } from "lucide-react";
+import {
+  AlertCircle,
+  Database,
+  CheckCircle2,
+  Copy,
+  Eye,
+  Loader2,
+  Zap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { setupDatabase, checkDatabaseStatus } from "@/lib/database-setup";
@@ -15,7 +23,10 @@ export default function DatabaseSetupGuide({
   const [copied, setCopied] = useState(false);
   const [showFullScript, setShowFullScript] = useState(false);
   const [autoSetupLoading, setAutoSetupLoading] = useState(false);
-  const [autoSetupResult, setAutoSetupResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [autoSetupResult, setAutoSetupResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   // Avtomatik database setup
   const handleAutoSetup = async () => {
@@ -23,7 +34,7 @@ export default function DatabaseSetupGuide({
     setAutoSetupResult(null);
 
     try {
-      console.log('🚀 Avtomatik database setup boshlandi...');
+      console.log("🚀 Avtomatik database setup boshlandi...");
       const result = await setupDatabase();
       setAutoSetupResult(result);
 
@@ -33,10 +44,10 @@ export default function DatabaseSetupGuide({
         }, 2000);
       }
     } catch (error: any) {
-      console.error('❌ Avtomatik setup xatoligi:', error);
+      console.error("❌ Avtomatik setup xatoligi:", error);
       setAutoSetupResult({
         success: false,
-        message: error.message || 'Noma\'lum xatolik yuz berdi'
+        message: error.message || "Noma'lum xatolik yuz berdi",
       });
     } finally {
       setAutoSetupLoading(false);
@@ -385,14 +396,20 @@ CREATE POLICY "Admin users can access user_subscriptions" ON public.user_subscri
                 </Button>
 
                 {autoSetupResult && (
-                  <div className={`mt-3 p-3 rounded-lg ${
-                    autoSetupResult.success
-                      ? 'bg-green-50 border border-green-200'
-                      : 'bg-red-50 border border-red-200'
-                  }`}>
-                    <p className={`text-sm ${
-                      autoSetupResult.success ? 'text-green-800' : 'text-red-800'
-                    }`}>
+                  <div
+                    className={`mt-3 p-3 rounded-lg ${
+                      autoSetupResult.success
+                        ? "bg-green-50 border border-green-200"
+                        : "bg-red-50 border border-red-200"
+                    }`}
+                  >
+                    <p
+                      className={`text-sm ${
+                        autoSetupResult.success
+                          ? "text-green-800"
+                          : "text-red-800"
+                      }`}
+                    >
                       {autoSetupResult.message}
                     </p>
                     {autoSetupResult.success && (

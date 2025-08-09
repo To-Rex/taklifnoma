@@ -25,18 +25,21 @@ Agar avtomatik sozlash ishlamasa:
 ## 🗂 Yaratiluvchi Jadvallar
 
 ### Asosiy Jadvallar
+
 - **`profiles`** - Foydalanuvchi profillari
-- **`custom_templates`** - Maxsus shablonlar  
+- **`custom_templates`** - Maxsus shablonlar
 - **`invitations`** - Taklifnomalar
 - **`guests`** - Mehmonlar ro'yxati
 - **`rsvps`** - Javoblar (kelaman/kelmayman)
 
 ### Admin Jadvallar
+
 - **`admin_users`** - Admin foydalanuvchilar
 - **`purchase_requests`** - Sotib olish so'rovlari
 - **`user_subscriptions`** - Foydalanuvchi obunalari
 
 ### Analytics Jadvallar
+
 - **`invitation_views`** - Ko'rishlar statistikasi
 - **`template_usage`** - Shablon foydalanish statistikasi
 
@@ -52,13 +55,16 @@ Barcha jadvallar uchun **Row Level Security** yoqilgan:
 ## ⚡ Avtomatik Funksiyalar
 
 ### Triggers
+
 - **`updated_at`** - Har bir o'zgartirishda avtomatik yangilanadi
 - **`handle_new_user`** - Yangi foydalanuvchi ro'yxatdan o'tganda profil yaratadi
 - **`increment_template_usage`** - Shablon ishlatilganda hisoblagichni oshiradi
 - **`increment_invitation_views`** - Ko'rishlar sonini avtomatik hisoblaydi
 
 ### Indekslar
+
 Tezkor qidiruv uchun barcha muhim maydonlarga indekslar qo'yilgan:
+
 - Email, slug, created_at bo'yicha tezkor qidiruv
 - Foreign key'lar uchun optimizatsiya
 - Full-text search uchun tayyorlik
@@ -66,6 +72,7 @@ Tezkor qidiruv uchun barcha muhim maydonlarga indekslar qo'yilgan:
 ## 🧪 Test Ma'lumotlari
 
 Default admin akkaunt yaratiladi:
+
 - **Username:** `admin`
 - **Password:** `admin`
 - **Role:** `admin`
@@ -81,22 +88,25 @@ Agar avvalgi versiyangiz bo'lsa:
 ## 🔧 Muammolarni Hal Qilish
 
 ### ❌ "Table does not exist" xatoligi
+
 ```sql
 -- Jadval mavjudligini tekshiring
-SELECT table_name 
-FROM information_schema.tables 
+SELECT table_name
+FROM information_schema.tables
 WHERE table_schema = 'public';
 ```
 
 ### ❌ RLS policy xatoligi
+
 ```sql
 -- RLS holatini tekshiring
-SELECT schemaname, tablename, rowsecurity 
-FROM pg_tables 
+SELECT schemaname, tablename, rowsecurity
+FROM pg_tables
 WHERE schemaname = 'public';
 ```
 
 ### ❌ Permission denied
+
 1. **Supabase** da **service_role** key ishlatilganligini tekshiring
 2. **Environment variables** to'g'ri o'rnatilganligini tasdiqlang
 
@@ -126,7 +136,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 Database sozlangandan keyin quyidagi API'lar ishlaydi:
 
 - **Templates:** `/api/templates`
-- **Invitations:** `/api/invitations` 
+- **Invitations:** `/api/invitations`
 - **Analytics:** `/api/analytics`
 - **Admin:** `/api/admin`
 
