@@ -271,22 +271,53 @@ export const isTableNotFoundError = (error: any): boolean => {
 import { templateManager, defaultWeddingTemplates } from "./defaultTemplates";
 
 export const templateOperations = {
-  // Create template with caching
+  // Create template with enhanced error handling
   create: async (templateData: any) => {
-    try {
-      const result = await connectionManager.executeQuery(
-        `create_template_${Date.now()}`,
-        async () => {
-          const { data, error } = await supabase
-            .from("custom_templates")
-            .insert(templateData)
-            .select()
-            .single();
+    console.log('🚀 Template yaratish boshlandi:', templateData);
 
-          if (error) throw error;
-          return data;
-        },
-      );
+    try {
+      // Avval database mavjudligini tekshiramiz
+      const { error: testError } = await supabase
+        .from('custom_templates')
+        .select('id')
+        .limit(1);
+
+      if (testError) {
+        console.log('❌ custom_templates jadvali mavjud emas:', testError.message);
+
+        // Jadval mavjud bo'lmasa, fallback
+        const localTemplate = {
+          ...templateData,
+          id: `local_${Date.now()}`,
+          created_at: new Date().toISOString(),
+          is_local: true,
+        };
+
+        localStorage.setItem(
+          `custom_template_${localTemplate.id}`,
+          JSON.stringify(localTemplate),
+        );
+
+        return {
+          data: localTemplate,
+          error: null,
+          message: 'Template vaqtincha mahalliy xotiraga saqlandi. Database ulanishini tekshiring.'
+        };
+      }
+
+      // Database mavjud bo'lsa, saqlashga harakat qilamiz
+      const { data, error } = await supabase
+        .from("custom_templates")
+        .insert(templateData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Supabase template saqlash xatoligi:', error);
+        throw error;
+      }
+
+      console.log('✅ Template muvaffaqiyatli saqlandi:', data);
 
       // Invalidate user templates cache
       if (templateData.user_id) {
@@ -294,20 +325,22 @@ export const templateOperations = {
       }
 
       // Cache the new template
-      if (result?.id) {
-        cacheUtils.setTemplate(result.id, result);
+      if (data?.id) {
+        cacheUtils.setTemplate(data.id, data);
       }
 
-      return { data: result, error: null };
-    } catch (error) {
-      console.error("Template creation error:", error);
+      return { data, error: null, message: 'Template muvaffaqiyatli Supabase\'ga saqlandi!' };
+
+    } catch (error: any) {
+      console.error("❌ Template yaratishda xatolik:", error);
 
       // Fallback to localStorage
       const localTemplate = {
         ...templateData,
         id: `local_${Date.now()}`,
-        is_local: true,
         created_at: new Date().toISOString(),
+        is_local: true,
+        fallback_reason: error.message,
       };
 
       localStorage.setItem(
@@ -315,7 +348,11 @@ export const templateOperations = {
         JSON.stringify(localTemplate),
       );
 
-      return { data: localTemplate, error: null };
+      return {
+        data: localTemplate,
+        error: null,
+        message: 'Template vaqtincha mahalliy xotiraga saqlandi. Database bilan bog\'lanishda muammo.'
+      };
     }
   },
 
