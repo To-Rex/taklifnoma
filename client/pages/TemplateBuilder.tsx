@@ -48,6 +48,8 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import DatabaseSetupGuide from "@/components/DatabaseSetupGuide";
+import { checkDatabaseStatus } from "@/lib/database-setup";
 
 interface TemplateConfig {
   colors: {
