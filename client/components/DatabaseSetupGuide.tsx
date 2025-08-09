@@ -1,6 +1,7 @@
-import { AlertCircle, Database, CheckCircle2, Copy, Eye } from "lucide-react";
+import { AlertCircle, Database, CheckCircle2, Copy, Eye, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { setupDatabase, checkDatabaseStatus } from "@/lib/database-setup";
 
 interface DatabaseSetupGuideProps {
   isVisible: boolean;
