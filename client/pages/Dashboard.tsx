@@ -186,8 +186,8 @@ export default function Dashboard() {
 
       setStats(statsData);
       console.log("Stats loaded successfully");
-    } catch (error) {
-      console.error("Error in loadInvitations:", error);
+    } catch (error: any) {
+      console.error("Error in loadInvitations:", error.message || error);
       setError("Kutilmagan xatolik yuz berdi. Iltimos, qayta urinib ko'ring.");
       setInvitations([]);
       setStats({});
