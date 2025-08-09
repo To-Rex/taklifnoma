@@ -14,6 +14,34 @@ export default function DatabaseSetupGuide({
 }: DatabaseSetupGuideProps) {
   const [copied, setCopied] = useState(false);
   const [showFullScript, setShowFullScript] = useState(false);
+  const [autoSetupLoading, setAutoSetupLoading] = useState(false);
+  const [autoSetupResult, setAutoSetupResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Avtomatik database setup
+  const handleAutoSetup = async () => {
+    setAutoSetupLoading(true);
+    setAutoSetupResult(null);
+
+    try {
+      console.log('🚀 Avtomatik database setup boshlandi...');
+      const result = await setupDatabase();
+      setAutoSetupResult(result);
+
+      if (result.success) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error: any) {
+      console.error('❌ Avtomatik setup xatoligi:', error);
+      setAutoSetupResult({
+        success: false,
+        message: error.message || 'Noma\'lum xatolik yuz berdi'
+      });
+    } finally {
+      setAutoSetupLoading(false);
+    }
+  };
 
   if (!isVisible) return null;
 
