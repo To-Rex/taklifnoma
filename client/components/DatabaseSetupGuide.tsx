@@ -350,10 +350,59 @@ CREATE POLICY "Admin users can access user_subscriptions" ON public.user_subscri
                   Jadvallar topilmadi
                 </h3>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-4">
                 Supabase ma'lumotlar bazasida kerakli jadvallar mavjud emas.
                 Hozir demo rejimida ishlamoqda.
               </p>
+
+              {/* Avtomatik setup tugmasi */}
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-5 h-5 text-primary" />
+                  <h4 className="font-medium text-foreground">
+                    Avtomatik Setup (Tavsiya etiladi)
+                  </h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Barcha jadvallarni avtomatik yaratish va sozlash
+                </p>
+                <Button
+                  onClick={handleAutoSetup}
+                  disabled={autoSetupLoading}
+                  className="w-full"
+                >
+                  {autoSetupLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Database yaratilmoqda...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-2" />
+                      Database ni Avtomatik Sozlash
+                    </>
+                  )}
+                </Button>
+
+                {autoSetupResult && (
+                  <div className={`mt-3 p-3 rounded-lg ${
+                    autoSetupResult.success
+                      ? 'bg-green-50 border border-green-200'
+                      : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <p className={`text-sm ${
+                      autoSetupResult.success ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {autoSetupResult.message}
+                    </p>
+                    {autoSetupResult.success && (
+                      <p className="text-xs text-green-600 mt-1">
+                        Sahifa 2 soniyadan keyin avtomatik yangilanadi...
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
