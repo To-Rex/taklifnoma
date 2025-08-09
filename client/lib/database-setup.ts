@@ -1,5 +1,12 @@
 import { supabase } from './supabase';
 
+// UUID extension import
+declare global {
+  interface Window {
+    gen_random_uuid?: () => string;
+  }
+}
+
 // Database jadvallarini avtomatik yaratish va sozlash
 export async function setupDatabase() {
   console.log('🚀 Database setup boshlandi...');
