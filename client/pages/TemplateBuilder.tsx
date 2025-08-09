@@ -285,6 +285,21 @@ export default function TemplateBuilder() {
     { value: "bounce", label: "Bounce (Sakrash)" },
   ], []);
 
+  // Database holatini tekshirish
+  useEffect(() => {
+    const checkDB = async () => {
+      const status = await checkDatabaseStatus();
+      setDatabaseStatus(status);
+
+      if (!status.allTablesExist) {
+        console.log('❌ Database to\'liq sozlanmagan:', status);
+        setShowDatabaseSetup(true);
+      }
+    };
+
+    checkDB();
+  }, []);
+
   // Real-time update handlers with useCallback for performance
   const handleColorChange = useCallback((
     colorType: keyof TemplateConfig["colors"],
