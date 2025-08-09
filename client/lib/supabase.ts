@@ -458,7 +458,7 @@ export const invitationOperations = {
 
       return { data: result, error: null };
     } catch (error) {
-      console.error("Invitation creation error:", error);
+      console.error("Invitation creation error:", error.message || error);
 
       // Fallback to localStorage
       const localInvitation = {
