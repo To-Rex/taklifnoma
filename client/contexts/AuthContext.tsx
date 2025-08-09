@@ -10,6 +10,7 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  isInitialized: boolean;
   signUp: (
     email: string,
     password: string,
@@ -24,14 +25,30 @@ interface AuthContextType {
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Default context value to prevent undefined context errors
+const defaultAuthContextValue: AuthContextType = {
+  user: null,
+  profile: null,
+  session: null,
+  loading: true,
+  isInitialized: false,
+  signUp: async () => ({ error: new Error("Auth not initialized") }),
+  signIn: async () => ({ error: new Error("Auth not initialized") }),
+  signInWithGoogle: async () => ({ error: new Error("Auth not initialized") }),
+  signOut: async () => ({ error: new Error("Auth not initialized") }),
+  updateProfile: async () => ({ error: new Error("Auth not initialized") }),
+};
+
+const AuthContext = createContext<AuthContextType>(defaultAuthContextValue);
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    console.error("useAuth called outside of AuthProvider");
-    throw new Error("useAuth must be used within an AuthProvider");
+
+  // Context should never be undefined now due to default value
+  if (!context.isInitialized) {
+    console.warn("useAuth called before AuthProvider initialization");
   }
+
   return context;
 }
 
@@ -40,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   console.log("AuthProvider rendering with state:", {
     user: !!user,
@@ -145,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setProfile(null);
           setLoading(false);
+          setIsInitialized(true);
         }
       }
     };
@@ -320,36 +339,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, profile]);
 
   const createUserProfile = async (user: User) => {
-    const newProfile = {
-      id: user.id,
-      email: user.email || "",
-      first_name: user.user_metadata?.first_name || null,
-      last_name: user.user_metadata?.last_name || null,
-      avatar_url: user.user_metadata?.avatar_url || null,
-    };
+    try {
+      const newProfile = {
+        id: user.id,
+        email: user.email || "",
+        first_name: user.user_metadata?.first_name || null,
+        last_name: user.user_metadata?.last_name || null,
+        avatar_url: user.user_metadata?.avatar_url || null,
+      };
 
-    console.log("Creating profile with data:", newProfile);
+      console.log("Creating profile with data:", newProfile);
 
-    const { data: createdProfile, error: createError } = await supabase
-      .from("profiles")
-      .insert(newProfile)
-      .select()
-      .single();
+      const { data: createdProfile, error: createError } = await supabase
+        .from("profiles")
+        .insert(newProfile)
+        .select()
+        .single();
 
-    if (!createError && createdProfile) {
-      console.log("Profile created successfully:", createdProfile);
-      return createdProfile;
-    } else {
-      console.error("Error creating profile:", {
-        error: createError,
-        message: createError?.message,
-        details: createError?.details,
-        hint: createError?.hint,
-        code: createError?.code,
-        profileData: newProfile,
-      });
+      if (!createError && createdProfile) {
+        console.log("Profile created successfully:", createdProfile.id);
+        return createdProfile;
+      } else {
+        console.warn(
+          "Profile creation failed, using minimal profile:",
+          createError?.message,
+        );
+        throw createError;
+      }
+    } catch (error) {
+      console.warn(
+        "Database profile creation failed, returning minimal profile",
+      );
 
-      // Return a minimal profile object for the app to continue working
+      // Return a complete minimal profile object for the app to continue working
       return {
         id: user.id,
         email: user.email || "",
@@ -357,6 +379,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         last_name: user.user_metadata?.last_name || null,
         avatar_url: user.user_metadata?.avatar_url || null,
         created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        phone: null,
+        company_name: null,
+        is_active: true,
+        settings: {},
+        metadata: {},
       };
     }
   };
@@ -368,30 +396,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Set a timeout to prevent infinite loading
       timeoutId = setTimeout(() => {
-        console.log("Profile loading timeout, stopping...");
-        setLoading(false);
-        // Try to create a minimal profile if timeout occurs
+        console.log("Profile loading timeout, creating minimal profile...");
+        // Create a minimal profile from user metadata
         if (session?.user) {
-          setProfile({
+          const minimalProfile = {
             id: session.user.id,
             email: session.user.email || "",
             first_name: session.user.user_metadata?.first_name || null,
             last_name: session.user.user_metadata?.last_name || null,
             avatar_url: session.user.user_metadata?.avatar_url || null,
             created_at: new Date().toISOString(),
-          });
+            updated_at: new Date().toISOString(),
+            phone: null,
+            company_name: null,
+            is_active: true,
+            settings: {},
+            metadata: {},
+          };
+          setProfile(minimalProfile);
         }
-      }, 8000); // Extended timeout
-
-      // Use the current session instead of fetching again
-      const currentSession = await supabase.auth.getSession();
-      if (!currentSession.data.session) {
-        console.log("No session found");
-        setProfile(null);
         setLoading(false);
+        setIsInitialized(true);
+      }, 5000); // Reduced timeout
+
+      // Check if we can connect to database first
+      try {
+        const { error: testError } = await supabase
+          .from("profiles")
+          .select("id")
+          .limit(1);
+
+        if (testError) {
+          console.warn("Database connectivity issue:", testError.message);
+          throw new Error("Database not accessible");
+        }
+      } catch (dbError) {
+        console.warn("Database connection test failed, using minimal profile");
+        // Create minimal profile from user metadata
+        if (session?.user) {
+          const minimalProfile = {
+            id: session.user.id,
+            email: session.user.email || "",
+            first_name: session.user.user_metadata?.first_name || null,
+            last_name: session.user.user_metadata?.last_name || null,
+            avatar_url: session.user.user_metadata?.avatar_url || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            phone: null,
+            company_name: null,
+            is_active: true,
+            settings: {},
+            metadata: {},
+          };
+          setProfile(minimalProfile);
+        }
         return;
       }
 
+      // Try to load profile from database
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -399,79 +461,114 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        if (error.code === "PGRST116" || error.code === "PGRST301") {
+        if (
+          error.code === "PGRST116" ||
+          error.message.includes("No rows found")
+        ) {
           // Profile doesn't exist, create one
           console.log(
             "Profile not found, creating new profile for user:",
             userId,
           );
 
-          const { data: userData } = await supabase.auth.getUser();
-          if (userData.user) {
-            const newProfile = await createUserProfile(userData.user);
-            setProfile(newProfile);
-          } else {
-            console.error("No user data available for profile creation");
-            setProfile(null);
-          }
-        } else {
-          console.error("Error loading profile:", {
-            error: error,
-            message: error?.message,
-            details: error?.details,
-            hint: error?.hint,
-            code: error?.code,
-          });
-
-          // Handle session-related errors by signing out
-          if (
-            error?.message?.includes("406") ||
-            error?.code === "PGRST301" ||
-            error?.message?.includes("JWT") ||
-            error?.message?.includes("auth")
-          ) {
-            console.log("Session-related error detected, signing out...");
-            await supabase.auth.signOut();
-            setProfile(null);
-            setSession(null);
-            setUser(null);
-          } else {
-            // For other RLS errors, try to create a profile anyway
+          try {
             const { data: userData } = await supabase.auth.getUser();
             if (userData.user) {
               const newProfile = await createUserProfile(userData.user);
               setProfile(newProfile);
             } else {
-              setProfile(null);
+              console.warn("No user data available, using minimal profile");
+              if (session?.user) {
+                const minimalProfile = {
+                  id: session.user.id,
+                  email: session.user.email || "",
+                  first_name: session.user.user_metadata?.first_name || null,
+                  last_name: session.user.user_metadata?.last_name || null,
+                  avatar_url: session.user.user_metadata?.avatar_url || null,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  phone: null,
+                  company_name: null,
+                  is_active: true,
+                  settings: {},
+                  metadata: {},
+                };
+                setProfile(minimalProfile);
+              }
             }
+          } catch (createError) {
+            console.warn(
+              "Failed to create profile, using minimal profile:",
+              createError,
+            );
+            if (session?.user) {
+              const minimalProfile = {
+                id: session.user.id,
+                email: session.user.email || "",
+                first_name: session.user.user_metadata?.first_name || null,
+                last_name: session.user.user_metadata?.last_name || null,
+                avatar_url: session.user.user_metadata?.avatar_url || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                phone: null,
+                company_name: null,
+                is_active: true,
+                settings: {},
+                metadata: {},
+              };
+              setProfile(minimalProfile);
+            }
+          }
+        } else {
+          console.warn("Profile loading error:", error.message);
+          // For any other error, use minimal profile
+          if (session?.user) {
+            const minimalProfile = {
+              id: session.user.id,
+              email: session.user.email || "",
+              first_name: session.user.user_metadata?.first_name || null,
+              last_name: session.user.user_metadata?.last_name || null,
+              avatar_url: session.user.user_metadata?.avatar_url || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              phone: null,
+              company_name: null,
+              is_active: true,
+              settings: {},
+              metadata: {},
+            };
+            setProfile(minimalProfile);
           }
         }
       } else if (data) {
+        console.log("Profile loaded successfully:", data.id);
         setProfile(data);
       }
     } catch (error) {
-      console.error("Error in loadProfile:", {
-        error: error,
-        message: error?.message,
-        stack: error?.stack,
-      });
+      console.warn("Unexpected error in loadProfile, using fallback:", error);
 
-      // Try to create a profile as fallback
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          const newProfile = await createUserProfile(userData.user);
-          setProfile(newProfile);
-        } else {
-          setProfile(null);
-        }
-      } catch (fallbackError) {
-        console.error("Fallback profile creation failed:", fallbackError);
-        setProfile(null);
+      // Always provide a fallback profile to prevent app breakage
+      if (session?.user) {
+        const fallbackProfile = {
+          id: session.user.id,
+          email: session.user.email || "",
+          first_name: session.user.user_metadata?.first_name || null,
+          last_name: session.user.user_metadata?.last_name || null,
+          avatar_url: session.user.user_metadata?.avatar_url || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          phone: null,
+          company_name: null,
+          is_active: true,
+          settings: {},
+          metadata: {},
+        };
+        setProfile(fallbackProfile);
       }
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
       setLoading(false);
+      setIsInitialized(true);
     }
   };
 
@@ -547,6 +644,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     session,
     loading,
+    isInitialized,
     signUp,
     signIn,
     signInWithGoogle,

@@ -21,14 +21,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabase } from "@/lib/supabase";
+import { supabase, invitationOperations } from "@/lib/supabase";
+import cacheUtils from "@/lib/cache";
 import { generateDemoUUID, generateUUIDFromSlug } from "@/lib/utils";
 import {
-  weddingTemplates,
+  templateManager,
+  defaultWeddingTemplates,
   templateCategories,
   getTemplatesByCategory,
-  type TemplateData,
-} from "@/lib/templates";
+  type DefaultTemplate,
+} from "@/lib/defaultTemplates";
 import TemplateRenderer from "@/components/TemplateRenderer";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -50,8 +52,9 @@ export default function CreateInvitation() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [newGuest, setNewGuest] = useState({ name: "", email: "", phone: "" });
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [filteredTemplates, setFilteredTemplates] =
-    useState<TemplateData[]>(weddingTemplates);
+  const [filteredTemplates, setFilteredTemplates] = useState<DefaultTemplate[]>(
+    defaultWeddingTemplates,
+  );
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -66,9 +69,8 @@ export default function CreateInvitation() {
       setCurrentStep(3); // Template selection step ga o'tish
     }
   }, [location.state]);
-  const [previewTemplate, setPreviewTemplate] = useState<TemplateData | null>(
-    null,
-  );
+  const [previewTemplate, setPreviewTemplate] =
+    useState<DefaultTemplate | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -88,18 +90,33 @@ export default function CreateInvitation() {
   });
 
   // Template kategoriya filter
-  const handleCategoryChange = (categoryId: string) => {
+  const handleCategoryChange = async (categoryId: string) => {
     setSelectedCategory(categoryId);
-    if (categoryId === "all") {
-      setFilteredTemplates(weddingTemplates);
-    } else {
-      const filtered = getTemplatesByCategory(categoryId);
-      setFilteredTemplates(filtered);
+    try {
+      if (categoryId === "all") {
+        const templates = await templateManager.getAllTemplates();
+        setFilteredTemplates(templates);
+      } else {
+        const filtered =
+          await templateManager.getTemplatesByCategory(categoryId);
+        setFilteredTemplates(filtered);
+      }
+    } catch (error) {
+      console.warn("Template filterlashda xatolik:", error);
+      // Fallback to default templates
+      if (categoryId === "all") {
+        setFilteredTemplates(defaultWeddingTemplates);
+      } else {
+        const filtered = defaultWeddingTemplates.filter(
+          (t) => t.category === categoryId,
+        );
+        setFilteredTemplates(filtered);
+      }
     }
   };
 
   // Template preview
-  const handlePreviewTemplate = (template: TemplateData) => {
+  const handlePreviewTemplate = (template: DefaultTemplate) => {
     setPreviewTemplate(template);
     setShowPreview(true);
   };
@@ -163,7 +180,7 @@ export default function CreateInvitation() {
   };
 
   const handleSave = async () => {
-    console.log("handleSave started");
+    console.log("🚀 Starting optimized invitation creation...");
 
     if (!user) {
       setError("Taklifnoma yaratish uchun tizimga kirishingiz kerak");
@@ -183,38 +200,12 @@ export default function CreateInvitation() {
 
     setIsLoading(true);
     setError("");
-    console.log("Starting invitation creation...");
-    console.log("User authenticated:", !!user, "User ID:", user?.id);
+    console.log("📋 Starting high-performance invitation creation...");
+    console.log("👤 User authenticated:", !!user, "User ID:", user?.id);
 
     try {
-      // Check authentication session first
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-      if (sessionError) {
-        console.error("Session error:", sessionError);
-        setError(
-          "Autentifikatsiya sessiyasida xatolik. Iltimos, qayta kiring.",
-        );
-        return;
-      }
-
-      if (!session) {
-        console.error("No active session found");
-        setError("Sessiya tugagan. Iltimos, qayta kiring.");
-        return;
-      }
-
-      console.log(
-        "Session verified:",
-        !!session,
-        "Session user:",
-        session.user?.id,
-      );
-
       const slug = generateSlug();
-      console.log("Generated slug:", slug);
+      console.log("🔗 Generated slug:", slug);
 
       const invitationData = {
         user_id: user.id,
@@ -232,150 +223,84 @@ export default function CreateInvitation() {
         rsvp_deadline: formData.rsvpDeadline || null,
         slug: slug,
         is_active: true,
+        metadata: {
+          created_with: "CreateInvitation v2.0",
+          performance_optimized: true,
+        },
       };
 
-      console.log("Invitation data prepared:", invitationData);
+      console.log("📋 Invitation data prepared:", invitationData);
 
-      console.log("Attempting to save to Supabase...");
-
-      // Test connection first
-      const { data: testData, error: testError } = await supabase
-        .from("invitations")
-        .select("id")
-        .limit(1);
-
-      if (testError) {
-        console.error("Database connection test failed:", testError);
-      } else {
-        console.log("Database connection test successful");
-      }
-
-      const { data: invitation, error } = await supabase
-        .from("invitations")
-        .insert(invitationData)
-        .select()
-        .single();
+      // Use optimized invitation operations with automatic caching and fallback
+      const { data: invitation, error } =
+        await invitationOperations.create(invitationData);
 
       if (error) {
-        console.error("Supabase insertion error:", {
-          error: error,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-        });
-
-        // Show user-friendly error message based on error type
-        if (error.message.includes("auth")) {
-          setError("Autentifikatsiya xatoligi. Iltimos, qayta kiring.");
-          return;
-        } else if (error.message.includes("duplicate")) {
-          setError("Bu ma'lumotlar bilan taklifnoma allaqachon mavjud.");
-          return;
-        } else {
-          setError(`Ma'lumotlar bazasiga saqlashda xatolik: ${error.message}`);
-        }
-
-        // Create demo invitation as fallback
-        console.log("Demo rejimida taklifnoma yaratilmoqda...");
-        const mockId = generateDemoInvitationId();
-
-        // Real ma'lumotlarni localStorage ga saqlaymiz
-        const realInvitationData = {
-          id: mockId,
-          groom_name: formData.groomName,
-          bride_name: formData.brideName,
-          wedding_date: formData.weddingDate,
-          wedding_time: formData.weddingTime,
-          venue: formData.venue,
-          address: formData.address,
-          city: formData.city,
-          custom_message: formData.customMessage,
-          template_id: formData.selectedTemplate,
-          created_at: new Date().toISOString(),
-          is_demo: true,
-        };
-
-        localStorage.setItem(
-          `invitation_${mockId}`,
-          JSON.stringify(realInvitationData),
+        console.error("❌ Invitation creation error:", error);
+        throw new Error(
+          error.message || "Taklifnoma yaratishda xatolik yuz berdi",
         );
-
-        navigate(`/invitation/${mockId}`);
-        return;
       }
 
-      console.log("Supabase save successful:", invitation);
+      console.log("✅ Invitation created successfully:", invitation);
 
-      // Mehmonlarni qo'shish
-      if (guests.length > 0 && invitation) {
-        console.log("Adding guests...");
-        const guestData = guests.map((guest) => ({
-          invitation_id: invitation.id,
-          name: guest.name.trim(),
-          email: guest.email?.trim() || null,
-          phone: guest.phone?.trim() || null,
-          plus_one: false,
-        }));
+      // Add guests with optimized handling
+      if (guests.length > 0 && invitation?.id) {
+        console.log("👥 Adding guests...");
+        try {
+          const guestData = guests.map((guest) => ({
+            invitation_id: invitation.id,
+            name: guest.name.trim(),
+            email: guest.email?.trim() || null,
+            phone: guest.phone?.trim() || null,
+            plus_one: false,
+            metadata: {
+              added_with: "CreateInvitation v2.0",
+            },
+          }));
 
-        const { error: guestError } = await supabase
-          .from("guests")
-          .insert(guestData);
-        if (guestError) {
-          console.error("Guest insertion error:", guestError);
-        } else {
-          console.log("Guests added successfully");
+          const { error: guestError } = await supabase
+            .from("guests")
+            .insert(guestData);
+
+          if (guestError) {
+            console.warn(
+              "⚠️ Guest insertion failed, saving to localStorage:",
+              guestError,
+            );
+            // Save guests locally as backup
+            localStorage.setItem(
+              `guests_${invitation.id}`,
+              JSON.stringify(guests),
+            );
+          } else {
+            console.log("✅ Guests added successfully");
+          }
+        } catch (guestErr) {
+          console.warn("⚠️ Guest handling error:", guestErr);
+          localStorage.setItem(
+            `guests_${invitation.id}`,
+            JSON.stringify(guests),
+          );
         }
       }
 
-      // Backup uchun localStorage ga ham saqlaymiz
-      const backupData = {
-        ...invitation,
-        is_demo: false,
-        guests: guests,
-      };
-      localStorage.setItem(
-        `invitation_${invitation.id}`,
-        JSON.stringify(backupData),
-      );
+      // Clear any cached drafts
+      cacheUtils.invalidateUser(user.id);
 
-      console.log("Navigating to invitation:", invitation.id);
+      console.log("🎯 Navigating to invitation:", invitation.id);
       setSuccess(true);
 
-      // Add a small delay to ensure state updates and show success message
+      // Navigate with optimized delay
       setTimeout(() => {
         navigate(`/invitation/${invitation.id}`);
-      }, 1500);
-    } catch (error) {
-      console.error("Taklifnoma yaratishda umumiy xatolik:", error);
-      setError("Kutilmagan xatolik yuz berdi. Iltimos, qayta urinib ko'ring.");
-
-      console.log("Demo rejimida taklifnoma yaratilmoqda...");
-      // Demo uchun UUID formatda ID yaratamiz
-      const mockId = generateDemoInvitationId();
-
-      // Real ma'lumotlarni localStorage ga saqlaymiz
-      const realInvitationData = {
-        id: mockId,
-        groom_name: formData.groomName,
-        bride_name: formData.brideName,
-        wedding_date: formData.weddingDate,
-        wedding_time: formData.weddingTime,
-        venue: formData.venue,
-        address: formData.address,
-        city: formData.city,
-        custom_message: formData.customMessage,
-        template_id: formData.selectedTemplate,
-        created_at: new Date().toISOString(),
-        is_demo: true,
-      };
-
-      localStorage.setItem(
-        `invitation_${mockId}`,
-        JSON.stringify(realInvitationData),
+      }, 1000);
+    } catch (err: any) {
+      console.error("❌ Invitation creation failed:", err?.message || err);
+      setError(
+        err?.message ||
+          "Kutilmagan xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
       );
-
-      navigate(`/invitation/${mockId}`);
     } finally {
       // Ensure loading state is always reset
       if (!success) {

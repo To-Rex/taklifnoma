@@ -1,44 +1,82 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
-import { Eye, ArrowRight, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  weddingTemplates,
-  templateCategories,
-  getTemplatesByCategory,
-  type TemplateData,
-} from "@/lib/templates";
 import TemplateRenderer from "@/components/TemplateRenderer";
 import Navigation from "@/components/Navigation";
+import {
+  defaultWeddingTemplates,
+  templateCategories,
+  type DefaultTemplate,
+} from "@/lib/defaultTemplates";
 
 export default function Templates() {
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [filteredTemplates, setFilteredTemplates] =
-    useState<TemplateData[]>(weddingTemplates);
-  const [previewTemplate, setPreviewTemplate] = useState<TemplateData | null>(
-    null,
+  const [templates, setTemplates] = useState<DefaultTemplate[]>([]);
+  const [filteredTemplates, setFilteredTemplates] = useState<DefaultTemplate[]>(
+    [],
   );
+  const [previewTemplate, setPreviewTemplate] =
+    useState<DefaultTemplate | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Load templates on component mount
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      console.log("🔄 Shablonlarni yuklamoqda...");
+
+      // Always use default templates for now
+      console.log("✅ Default shablonlarni ishlatmoqda...");
+
+      // Use default templates directly
+      setTemplates(defaultWeddingTemplates);
+      setFilteredTemplates(defaultWeddingTemplates);
+
+      console.log(
+        "✅ Shablonlar muvaffaqiyatli yuklandi:",
+        defaultWeddingTemplates.length,
+      );
+    } catch (err) {
+      console.error("❌ Shablonlarni yuklashda xatolik:", err);
+      setError("Shablonlarni yuklashda xatolik yuz berdi");
+
+      // Fallback to default templates
+      setTemplates(defaultWeddingTemplates);
+      setFilteredTemplates(defaultWeddingTemplates);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Template kategoriya filter
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
+
     if (categoryId === "all") {
-      setFilteredTemplates(weddingTemplates);
+      setFilteredTemplates(templates);
     } else {
-      const filtered = getTemplatesByCategory(categoryId);
+      const filtered = templates.filter((t) => t.category === categoryId);
       setFilteredTemplates(filtered);
     }
   };
 
   // Template preview
-  const handlePreviewTemplate = (template: TemplateData) => {
+  const handlePreviewTemplate = (template: DefaultTemplate) => {
     setPreviewTemplate(template);
     setShowPreview(true);
   };
 
   // Mock invitation data for preview
-  const getMockInvitationData = (template: TemplateData) => ({
+  const getMockInvitationData = (template: DefaultTemplate) => ({
     id: "preview",
     groom_name: "Jahongir",
     bride_name: "Sarvinoz",
@@ -52,9 +90,25 @@ export default function Templates() {
     template_id: template.id,
   });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation showBackButton />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Shablonlar yuklanmoqda...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background animate-fade-in">
       <Navigation showBackButton className="animate-slide-up" />
+
+      <div className="max-w-6xl mx-auto p-6"></div>
 
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}

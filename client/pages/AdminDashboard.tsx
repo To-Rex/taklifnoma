@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DatabaseSetupGuide from "@/components/DatabaseSetupGuide";
 import {
   Table,
   TableBody,
@@ -93,6 +94,7 @@ export default function AdminDashboard() {
   );
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showDatabaseGuide, setShowDatabaseGuide] = useState(false);
 
   // Redirect if not logged in
   if (!isLoggedIn) {
@@ -105,15 +107,29 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     setLoading(true);
+
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log("Admin dashboard loading timeout - stopping");
+      setLoading(false);
+    }, 8000); // 8 seconds timeout
+
     try {
-      // Load statistics
-      await Promise.all([
-        loadStats(),
-        loadPurchaseRequests(),
-        loadSubscriptions(),
+      // Load statistics with timeout protection
+      await Promise.race([
+        Promise.all([loadStats(), loadPurchaseRequests(), loadSubscriptions()]),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Dashboard loading timeout")),
+            7000,
+          ),
+        ),
       ]);
+
+      clearTimeout(timeoutId);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
+      clearTimeout(timeoutId);
     } finally {
       setLoading(false);
     }
@@ -121,32 +137,52 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      // Get total users
-      const { count: usersCount } = await supabase
+      // First test if tables exist with a quick query
+      const { error: testError } = await supabase
         .from("profiles")
-        .select("*", { count: "exact", head: true });
+        .select("id")
+        .limit(1);
 
-      // Get total invitations
-      const { count: invitationsCount } = await supabase
-        .from("invitations")
-        .select("*", { count: "exact", head: true });
+      if (testError && testError.message.includes("does not exist")) {
+        console.log("Database tables not found, using demo data");
+        setShowDatabaseGuide(true);
+        setStats({
+          totalUsers: 0,
+          totalInvitations: parseInt(
+            localStorage.getItem("demo_invitation_count") || "0",
+          ),
+          totalSubscriptions: 0,
+          pendingRequests: 0,
+          activeSubscriptions: 0,
+          monthlyRevenue: 0,
+        });
+        return;
+      }
 
-      // Get total subscriptions
-      const { count: subscriptionsCount } = await supabase
-        .from("user_subscriptions")
-        .select("*", { count: "exact", head: true });
-
-      // Get pending purchase requests
-      const { count: pendingCount } = await supabase
-        .from("purchase_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
-
-      // Get active subscriptions
-      const { count: activeCount } = await supabase
-        .from("user_subscriptions")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "active");
+      // If tables exist, load real data
+      const [
+        { count: usersCount },
+        { count: invitationsCount },
+        { count: subscriptionsCount },
+        { count: pendingCount },
+        { count: activeCount },
+      ] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase
+          .from("invitations")
+          .select("*", { count: "exact", head: true }),
+        supabase
+          .from("user_subscriptions")
+          .select("*", { count: "exact", head: true }),
+        supabase
+          .from("purchase_requests")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "pending"),
+        supabase
+          .from("user_subscriptions")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "active"),
+      ]);
 
       setStats({
         totalUsers: usersCount || 0,
@@ -154,10 +190,21 @@ export default function AdminDashboard() {
         totalSubscriptions: subscriptionsCount || 0,
         pendingRequests: pendingCount || 0,
         activeSubscriptions: activeCount || 0,
-        monthlyRevenue: 0, // Calculate from subscriptions if needed
+        monthlyRevenue: 0,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
+      // Set demo/fallback stats on error
+      setStats({
+        totalUsers: 0,
+        totalInvitations: parseInt(
+          localStorage.getItem("demo_invitation_count") || "0",
+        ),
+        totalSubscriptions: 0,
+        pendingRequests: 0,
+        activeSubscriptions: 0,
+        monthlyRevenue: 0,
+      });
     }
   };
 
@@ -169,10 +216,18 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("does not exist")) {
+          console.log("Purchase requests table not found, using empty data");
+          setPurchaseRequests([]);
+          return;
+        }
+        throw error;
+      }
       setPurchaseRequests(data || []);
     } catch (error) {
       console.error("Error loading purchase requests:", error);
+      setPurchaseRequests([]);
     }
   };
 
@@ -193,10 +248,18 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("does not exist")) {
+          console.log("Subscriptions table not found, using empty data");
+          setSubscriptions([]);
+          return;
+        }
+        throw error;
+      }
       setSubscriptions(data || []);
     } catch (error) {
       console.error("Error loading subscriptions:", error);
+      setSubscriptions([]);
     }
   };
 
@@ -625,6 +688,12 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Database Setup Guide */}
+      <DatabaseSetupGuide
+        isVisible={showDatabaseGuide}
+        onDismiss={() => setShowDatabaseGuide(false)}
+      />
     </div>
   );
 }

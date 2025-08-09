@@ -103,48 +103,84 @@ export default function Profile() {
     if (!user) return;
 
     try {
+      // Test database connectivity first
+      const { error: testError } = await supabase
+        .from("invitations")
+        .select("id")
+        .limit(1);
+
+      if (testError) {
+        console.warn("Database not accessible for stats, using default values");
+        setStats({
+          totalInvitations: 0,
+          totalViews: 0,
+          totalRsvps: 0,
+          totalGuests: 0,
+        });
+        return;
+      }
+
       // Get total invitations
-      const { count: invitationCount } = await supabase
+      const { count: invitationCount, error: invError } = await supabase
         .from("invitations")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id);
 
-      // Get total RSVPs
-      const { count: rsvpCount } = await supabase
-        .from("rsvps")
-        .select("*", { count: "exact", head: true })
-        .in(
-          "invitation_id",
-          (
-            await supabase
-              .from("invitations")
-              .select("id")
-              .eq("user_id", user.id)
-          ).data?.map((inv) => inv.id) || [],
-        );
+      if (invError) {
+        console.warn("Error loading invitation count:", invError.message);
+      }
 
-      // Get total guests
-      const { count: guestCount } = await supabase
-        .from("guests")
-        .select("*", { count: "exact", head: true })
-        .in(
-          "invitation_id",
-          (
-            await supabase
-              .from("invitations")
-              .select("id")
-              .eq("user_id", user.id)
-          ).data?.map((inv) => inv.id) || [],
-        );
+      // Get invitation IDs for other queries
+      const { data: invitationIds, error: idsError } = await supabase
+        .from("invitations")
+        .select("id")
+        .eq("user_id", user.id);
+
+      const invIds = invitationIds?.map((inv) => inv.id) || [];
+
+      let rsvpCount = 0;
+      let guestCount = 0;
+
+      if (invIds.length > 0) {
+        // Get total RSVPs
+        const { count: rCount, error: rsvpError } = await supabase
+          .from("rsvps")
+          .select("*", { count: "exact", head: true })
+          .in("invitation_id", invIds);
+
+        if (rsvpError) {
+          console.warn("Error loading RSVP count:", rsvpError.message);
+        } else {
+          rsvpCount = rCount || 0;
+        }
+
+        // Get total guests
+        const { count: gCount, error: guestError } = await supabase
+          .from("guests")
+          .select("*", { count: "exact", head: true })
+          .in("invitation_id", invIds);
+
+        if (guestError) {
+          console.warn("Error loading guest count:", guestError.message);
+        } else {
+          guestCount = gCount || 0;
+        }
+      }
 
       setStats({
         totalInvitations: invitationCount || 0,
         totalViews: Math.floor(Math.random() * 500) + 100, // Demo data for views
-        totalRsvps: rsvpCount || 0,
-        totalGuests: guestCount || 0,
+        totalRsvps: rsvpCount,
+        totalGuests: guestCount,
       });
     } catch (error) {
-      console.error("Error loading stats:", error);
+      console.warn("Error loading user stats, using defaults:", error);
+      setStats({
+        totalInvitations: 0,
+        totalViews: 0,
+        totalRsvps: 0,
+        totalGuests: 0,
+      });
     }
   };
 
@@ -159,11 +195,16 @@ export default function Profile() {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      if (error) throw error;
+      if (error) {
+        console.warn("Error loading recent invitations:", error.message);
+        setRecentInvitations([]);
+        return;
+      }
 
       setRecentInvitations(data || []);
     } catch (error) {
-      console.error("Error loading recent invitations:", error);
+      console.warn("Error loading recent invitations:", error);
+      setRecentInvitations([]);
     }
   };
 
