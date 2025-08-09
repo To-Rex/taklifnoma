@@ -127,8 +127,8 @@ export default function AdminDashboard() {
       ]);
 
       clearTimeout(timeoutId);
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
+    } catch (error: any) {
+      console.error("Error loading dashboard data:", error.message || error);
       clearTimeout(timeoutId);
     } finally {
       setLoading(false);
