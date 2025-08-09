@@ -144,11 +144,11 @@ export default function Dashboard() {
       clearTimeout(timeoutId);
 
       if (error) {
-        console.error("Error loading invitations:", error);
+        console.error("Error loading invitations:", error.message || error);
 
         // If there's an error, try loading from localStorage as fallback
         if (
-          error.message.includes("does not exist") ||
+          error.message?.includes("does not exist") ||
           error.code === "PGRST116"
         ) {
           console.log("Table error, falling back to localStorage");
