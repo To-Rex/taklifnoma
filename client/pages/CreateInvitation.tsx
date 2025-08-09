@@ -33,6 +33,8 @@ import {
 } from "@/lib/defaultTemplates";
 import TemplateRenderer from "@/components/TemplateRenderer";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import DatabaseSetupGuide from "@/components/DatabaseSetupGuide";
+import { checkDatabaseStatus } from "@/lib/database-setup";
 
 interface Guest {
   id: string;
