@@ -1451,6 +1451,14 @@ export default function TemplateBuilder() {
           </div>
         </div>
       </div>
+
+      {/* Database Setup Guide */}
+      {showDatabaseSetup && (
+        <DatabaseSetupGuide
+          isVisible={showDatabaseSetup}
+          onDismiss={() => setShowDatabaseSetup(false)}
+        />
+      )}
     </ProtectedRoute>
   );
 }
