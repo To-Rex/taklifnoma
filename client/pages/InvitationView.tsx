@@ -106,7 +106,7 @@ export default function InvitationView() {
       // In a real app, you'd want to track unique views
       // await supabase.rpc('increment_views', { invitation_id: id });
     } catch (error: any) {
-      console.error("Error loading invitation:", error);
+      console.error("Error loading invitation:", error.message || error);
       setError(error.message || "Taklifnomani yuklashda xatolik yuz berdi");
     } finally {
       setLoading(false);
